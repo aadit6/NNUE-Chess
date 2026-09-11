@@ -1,0 +1,26 @@
+[
+  {
+    "elo": 2000,
+    "wins": 6,
+    "draws": 3,
+    "losses": 1
+  },
+  {
+    "elo": 2250,
+    "wins": 6,
+    "draws": 4,
+    "losses": 0
+  },
+  {
+    "elo": 2500,
+    "wins": 6,
+    "draws": 2,
+    "losses": 2
+  },
+  {
+    "elo": 2750,
+    "wins": 4,
+    "draws": 3,
+    "losses": 3
+  }
+]

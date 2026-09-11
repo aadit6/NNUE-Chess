@@ -2,8 +2,16 @@
 __pycache__/
 .mypy_cache/
 .ruff_cache/
-submission.zip
+submission*.zip
 *.pgn
+!results/games/*.pgn
 engines
 analysis
 *.log
+# Opening books carry their own licences (HIARCS forbids rehosting); rebuild with tools/abk_to_polyglot.py
+book/
+versions/*/book/
+# One copy of the network, at weights/nnue.pt, is enough for git
+versions/*/weights/
+training/curves/
+tools/games/

@@ -1,19 +1,31 @@
-"""AI Chessathon submission: alpha-beta search over a hand-written evaluation.
+"""AI Chessathon submission: alpha-beta search over a neural evaluation.
 
-Search: iterative deepening, principal variation search, a transposition table kept across
-moves, MVV-LVA / killer / history move ordering, null-move pruning, late move reductions,
-check extensions and a captures-only quiescence search.
+Search: iterative deepening, principal variation search with aspiration windows, a
+transposition table kept across moves, move ordering by TT move, MVV-LVA with static exchange
+evaluation, killers and history, null-move, reverse futility, futility and late move pruning,
+late move reductions, internal iterative deepening, mate distance pruning, check extensions and
+a captures-only quiescence search.
 
-Evaluation: material and piece-square tables tapered by game phase, plus pawn structure,
-rook files, the bishop pair, king shelter and tempo.
+Evaluation: a HalfKAv2_hm network trained from scratch (see nnue_eval.py). The hand-written
+evaluation below stays as the fallback if the weights file is missing.
+
+Opening: book/hiarcs_ref.bin, the HIARCS Reference Book Lite (human games with both players rated
+2550 or more up to 2009, no computer or correspondence games) converted from Arena's .abk to
+Polyglot, keeping moves played in at least 3 games. Its most played move is played without search.
+The rules allow opening tables only for positions whose move number is 20 or lower, so the book
+holds no position past move 20 and is never consulted after it.
 """
 
 import math
 import time
 from collections.abc import Hashable
-from operator import itemgetter
+from operator import attrgetter, itemgetter
+from pathlib import Path
 
 import chess
+import chess.polyglot
+
+import nnue_eval
 
 CONTRACT_INCREMENT_MS = 500
 RESERVE_MS = 250  # the referee's watchdog grace and pipe latency
@@ -190,8 +202,8 @@ ADJACENT_FILES, PASSED_W, PASSED_B, SHIELD_NEAR_W, SHIELD_FAR_W, SHIELD_NEAR_B, 
     _masks()
 )
 
-def evaluate(board: chess.Board) -> int:
-    """Static evaluation in centipawns from the side to move's point of view."""
+def classical_evaluate(board: chess.Board) -> int:
+    """Hand-written evaluation in centipawns for the side to move, used without weights."""
     white = board.occupied_co[chess.WHITE]
     black = board.occupied_co[chess.BLACK]
     pawns, knights, bishops = board.pawns, board.knights, board.bishops
@@ -281,6 +293,31 @@ def evaluate(board: chess.Board) -> int:
 
     total = score + (middlegame * phase + endgame * (PHASE_MAX - phase)) // PHASE_MAX
     return total + TEMPO if board.turn == chess.WHITE else TEMPO - total
+
+
+# The network replaces the hand-written evaluation whenever its weights ship beside this file.
+NETWORK_LOADED = nnue_eval.load()
+print(f"evaluation: {'network' if NETWORK_LOADED else 'classical (no weights file)'}", flush=True)
+
+# A search reaches the same positions again through transpositions: a third to a half of the
+# evaluations in one measured search were repeats. A dictionary hit costs one hashed tuple, far
+# less than a forward pass, and the cache is kept across moves within a game.
+EVAL_CACHE_MAX = 400_000
+EVAL_CACHE: dict[Hashable, int] = {}
+
+
+def network_evaluate(board: chess.Board) -> int:
+    key = board._transposition_key()
+    score = EVAL_CACHE.get(key)
+    if score is None:
+        if len(EVAL_CACHE) >= EVAL_CACHE_MAX:
+            EVAL_CACHE.clear()
+        score = nnue_eval.evaluate(board)
+        EVAL_CACHE[key] = score
+    return score
+
+
+evaluate = network_evaluate if NETWORK_LOADED else classical_evaluate
 
 
 # --- search --------------------------------------------------------------------------------
@@ -743,12 +780,42 @@ class Clock:
 SEARCHER = Searcher()
 CLOCK = Clock()
 
+BOOK_PATH = Path(__file__).resolve().parent / "book" / "hiarcs_ref.bin"
+# "The opening is a position whose move number is 20 or lower." A table that answers anything
+# later is a middlegame table, which the rules count as an engine.
+LAST_BOOK_MOVE = 20
+
+
+def _open_book() -> chess.polyglot.MemoryMappedReader | None:
+    try:
+        return chess.polyglot.open_reader(BOOK_PATH)
+    except OSError:
+        return None
+
+
+BOOK = _open_book()
+print(f"opening book: {'hiarcs_ref' if BOOK else 'none (no book file)'}", flush=True)
+
+
+def _book_move(board: chess.Board) -> chess.Move | None:
+    if BOOK is None or board.fullmove_number > LAST_BOOK_MOVE:
+        return None
+    try:
+        entry = max(BOOK.find_all(board), key=attrgetter("weight"), default=None)
+    except Exception as error:  # a damaged book must never cost a move, search still has it
+        print(f"book failed, searching: {error!r}", flush=True)
+        return None
+    return None if entry is None else entry.move
+
 
 def _fallback(board: chess.Board) -> chess.Move:
     return SEARCHER.order(board, None, 0)[0]
 
 
 def _pick(board: chess.Board, time_left_ms: int) -> chess.Move:
+    book = _book_move(board)
+    if book is not None:
+        return book
     budget = CLOCK.budget(time_left_ms)
     if budget is None:
         return _fallback(board)

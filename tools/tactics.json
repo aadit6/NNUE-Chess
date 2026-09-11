@@ -1,0 +1,122 @@
+[
+  {
+    "fen": "rnb1kb1r/pp3ppp/2p5/q2p4/B2Pn3/5N2/PPP2PPP/RNBQK2R w KQkq - 2 8",
+    "best": "c2c3",
+    "gap": 350
+  },
+  {
+    "fen": "5r2/1pq1n1pk/2b1p1pp/p2pP3/P1pP4/2P1Br2/1RPQ1PPP/1R4K1 w - - 0 28",
+    "best": "g2f3",
+    "gap": 425
+  },
+  {
+    "fen": "rnbqr1k1/pp3ppp/2p5/4b3/P2Pp3/2P5/1P3PPP/R1BQKB1R w KQ - 0 13",
+    "best": "d4e5",
+    "gap": 640
+  },
+  {
+    "fen": "r1b1k3/pp1nn1pN/5q2/2bp4/5P2/P7/1PP1Q1PP/R1B1K2R b KQq - 0 15",
+    "best": "f6h4",
+    "gap": 519
+  },
+  {
+    "fen": "r1b1k2r/1pq2pp1/p1B1p2p/2PnP3/P7/5N2/2PB1PPP/1R1QK2R b Kkq - 0 15",
+    "best": "c7c6",
+    "gap": 251
+  },
+  {
+    "fen": "2rr2k1/1pq1npp1/p6p/2P1Pb2/P2n4/2B2B1P/2P2PP1/1R1Q1RK1 w - - 0 20",
+    "best": "c3d4",
+    "gap": 496
+  },
+  {
+    "fen": "r1bq1rk1/pppp1pp1/2N2n1p/1B4B1/4P3/2P5/PP3bPP/RN1Q1RK1 w - - 0 10",
+    "best": "f1f2",
+    "gap": 660
+  },
+  {
+    "fen": "r1bqr1k1/1ppp1ppp/p4n2/2b5/3nP3/2P5/PP3PPP/RNBQRBK1 b - - 1 11",
+    "best": "d4c6",
+    "gap": 423
+  },
+  {
+    "fen": "1r4k1/ppqb3p/2n1p2B/3p1r2/P1pP4/2P2N2/2P1nPP1/1RQ2K1R w - - 0 21",
+    "best": "f1e2",
+    "gap": 459
+  },
+  {
+    "fen": "1rbqk2r/pp2ppbp/2n3p1/2pN4/8/4PNP1/PP1P1PBP/R1BQ1RK1 b k - 0 9",
+    "best": "d8d5",
+    "gap": 586
+  },
+  {
+    "fen": "r1bQ1rk1/ppp2pp1/2p2n1p/1Bb3B1/4P3/2P5/PP3PPP/RN3RK1 b - - 0 10",
+    "best": "f8d8",
+    "gap": 619
+  },
+  {
+    "fen": "r1b2rk1/pp2nppp/2n1p3/q2pP3/P1pP4/2PB1N2/2PB1PPP/R2QK2R w KQ - 0 11",
+    "best": "d3h7",
+    "gap": 553
+  },
+  {
+    "fen": "r1b2rk1/p1pp1pp1/2p4p/2b3Q1/4P3/2PB4/PP3PPP/RN3RK1 b - - 0 13",
+    "best": "h6g5",
+    "gap": 638
+  },
+  {
+    "fen": "r1b2rk1/ppp2ppp/2pq1n2/2b5/3NP3/2P5/PP3PPP/RNBQR1K1 w - - 2 10",
+    "best": "e4e5",
+    "gap": 577
+  },
+  {
+    "fen": "r1bq1rk1/pp2ppbp/2n3p1/2pN4/8/4PNP1/PP1P1PBP/R1BQ1RK1 b - - 0 9",
+    "best": "d8d5",
+    "gap": 548
+  },
+  {
+    "fen": "rnbq1rk1/pp3ppp/2pb4/8/3Pp3/3B1N2/PPP2PPP/R1BQK2R w KQ - 0 10",
+    "best": "d3e4",
+    "gap": 439
+  },
+  {
+    "fen": "1r2k2r/2qn1pp1/b1n1p2p/2bpP3/5P2/2N2N2/PPP1Q1PP/R1B2K1R w k - 0 14",
+    "best": "e2a6",
+    "gap": 899
+  },
+  {
+    "fen": "1rbq1rk1/1p2ppbp/p1Np2p1/8/P3P1n1/2N3P1/1PP2PBP/R1BQR1K1 b - - 0 12",
+    "best": "b7c6",
+    "gap": 707
+  },
+  {
+    "fen": "r1bqkb1r/pp3ppp/3p4/1N1Pp3/1n6/2P5/PP3PPP/R1BQKB1R b KQkq - 0 9",
+    "best": "b4a6",
+    "gap": 346
+  },
+  {
+    "fen": "3r2k1/1p4bp/1p3pp1/3b4/3PN3/3R4/P4PPP/R5K1 b - - 0 22",
+    "best": "d5e4",
+    "gap": 664
+  },
+  {
+    "fen": "r4rk1/ppqb1pb1/3p1npp/2p1p1N1/1nP1P1P1/2NP1P2/PP1Q2BP/R1B1K2R b KQ - 0 14",
+    "best": "h6g5",
+    "gap": 335
+  },
+  {
+    "fen": "4rr1k/2qb3p/p2p1bn1/1p1P1pp1/4p3/1B2Q3/PPPBNPPP/3RR1K1 w - - 2 23",
+    "best": "d2c3",
+    "gap": 273
+  },
+  {
+    "fen": "3r1rk1/pp3pb1/4bqpp/n1p1p3/2P1N3/P2PP1PP/1PQ3B1/R1B1K2R b KQ - 2 18",
+    "best": "f6e7",
+    "gap": 823
+  },
+  {
+    "fen": "r1bq1rk1/pp2ppbp/2B3p1/8/3PP3/4BN2/P4PPP/R2QK2R b KQ - 0 11",
+    "best": "b7c6",
+    "gap": 512
+  }
+]

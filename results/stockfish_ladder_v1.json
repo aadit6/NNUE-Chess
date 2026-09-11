@@ -1,0 +1,253 @@
+[
+  {
+    "elo": 1400,
+    "games": 20,
+    "wins": 16,
+    "draws": 0,
+    "losses": 4,
+    "score": 0.8,
+    "margin": 0.1798619353545204,
+    "elo_diff": 240.823996531185,
+    "by_colour": {
+      "white": 0.9,
+      "black": 0.7
+    },
+    "by_opening": {
+      "English Opening": 0.75,
+      "French Classical": 0.0,
+      "French Winawer": 0.75,
+      "Grunfeld Defence": 1.0,
+      "Petroff Defence": 1.0,
+      "Scotch Game": 1.0,
+      "Sicilian Closed": 1.0,
+      "Sicilian Sveshnikov": 1.0
+    },
+    "terminations": {
+      "checkmate": 20
+    }
+  },
+  {
+    "elo": 1500,
+    "games": 20,
+    "wins": 11,
+    "draws": 2,
+    "losses": 7,
+    "score": 0.6,
+    "margin": 0.20849637129241666,
+    "elo_diff": 70.43650362227247,
+    "by_colour": {
+      "white": 0.5,
+      "black": 0.7
+    },
+    "by_opening": {
+      "English Opening": 0.625,
+      "French Classical": 1.0,
+      "French Winawer": 0.25,
+      "Grunfeld Defence": 0.5,
+      "Petroff Defence": 1.0,
+      "Scotch Game": 0.5,
+      "Sicilian Closed": 0.75,
+      "Sicilian Sveshnikov": 0.5
+    },
+    "terminations": {
+      "checkmate": 18,
+      "threefold_repetition": 2
+    }
+  },
+  {
+    "elo": 1600,
+    "games": 20,
+    "wins": 11,
+    "draws": 1,
+    "losses": 8,
+    "score": 0.575,
+    "margin": 0.21652409614296123,
+    "elo_diff": 52.51156585572756,
+    "by_colour": {
+      "white": 0.55,
+      "black": 0.6
+    },
+    "by_opening": {
+      "English Opening": 0.5,
+      "French Classical": 1.0,
+      "French Winawer": 0.625,
+      "Grunfeld Defence": 0.5,
+      "Petroff Defence": 0.5,
+      "Scotch Game": 1.0,
+      "Sicilian Closed": 0.5,
+      "Sicilian Sveshnikov": 0.0
+    },
+    "terminations": {
+      "checkmate": 19,
+      "threefold_repetition": 1
+    }
+  },
+  {
+    "elo": 1700,
+    "games": 20,
+    "wins": 9,
+    "draws": 0,
+    "losses": 11,
+    "score": 0.45,
+    "margin": 0.22370045761428856,
+    "elo_diff": -34.86007028756008,
+    "by_colour": {
+      "white": 0.4,
+      "black": 0.5
+    },
+    "by_opening": {
+      "English Opening": 0.5,
+      "French Classical": 0.0,
+      "French Winawer": 0.25,
+      "Grunfeld Defence": 1.0,
+      "Petroff Defence": 1.0,
+      "Scotch Game": 0.0,
+      "Sicilian Closed": 0.5,
+      "Sicilian Sveshnikov": 0.5
+    },
+    "terminations": {
+      "checkmate": 20
+    }
+  },
+  {
+    "elo": 1800,
+    "games": 20,
+    "wins": 2,
+    "draws": 0,
+    "losses": 18,
+    "score": 0.1,
+    "margin": 0.1348964515158903,
+    "elo_diff": -381.69700377572997,
+    "by_colour": {
+      "white": 0.2,
+      "black": 0.0
+    },
+    "by_opening": {
+      "English Opening": 0.0,
+      "French Classical": 0.0,
+      "French Winawer": 0.25,
+      "Grunfeld Defence": 0.0,
+      "Petroff Defence": 0.5,
+      "Scotch Game": 0.0,
+      "Sicilian Closed": 0.0,
+      "Sicilian Sveshnikov": 0.0
+    },
+    "terminations": {
+      "checkmate": 20
+    }
+  },
+  {
+    "elo": 1900,
+    "games": 20,
+    "wins": 4,
+    "draws": 7,
+    "losses": 9,
+    "score": 0.375,
+    "margin": 0.17232695362991948,
+    "elo_diff": -88.73949984654256,
+    "by_colour": {
+      "white": 0.4,
+      "black": 0.35
+    },
+    "by_opening": {
+      "English Opening": 0.375,
+      "French Classical": 0.0,
+      "French Winawer": 0.125,
+      "Grunfeld Defence": 0.75,
+      "Petroff Defence": 0.75,
+      "Scotch Game": 0.75,
+      "Sicilian Closed": 0.0,
+      "Sicilian Sveshnikov": 0.5
+    },
+    "terminations": {
+      "threefold_repetition": 6,
+      "checkmate": 13,
+      "insufficient_material": 1
+    }
+  },
+  {
+    "elo": 2000,
+    "games": 20,
+    "wins": 4,
+    "draws": 4,
+    "losses": 12,
+    "score": 0.3,
+    "margin": 0.1798619353545204,
+    "elo_diff": -147.19071411783776,
+    "by_colour": {
+      "white": 0.35,
+      "black": 0.25
+    },
+    "by_opening": {
+      "English Opening": 0.0,
+      "French Classical": 0.5,
+      "French Winawer": 0.375,
+      "Grunfeld Defence": 0.0,
+      "Petroff Defence": 0.5,
+      "Scotch Game": 0.75,
+      "Sicilian Closed": 0.25,
+      "Sicilian Sveshnikov": 0.25
+    },
+    "terminations": {
+      "checkmate": 16,
+      "threefold_repetition": 4
+    }
+  },
+  {
+    "elo": 2100,
+    "games": 20,
+    "wins": 5,
+    "draws": 4,
+    "losses": 11,
+    "score": 0.35,
+    "margin": 0.18944295072381917,
+    "elo_diff": -107.53812491703198,
+    "by_colour": {
+      "white": 0.4,
+      "black": 0.3
+    },
+    "by_opening": {
+      "English Opening": 0.375,
+      "French Classical": 0.0,
+      "French Winawer": 0.625,
+      "Grunfeld Defence": 0.5,
+      "Petroff Defence": 0.25,
+      "Scotch Game": 0.0,
+      "Sicilian Closed": 0.5,
+      "Sicilian Sveshnikov": 0.25
+    },
+    "terminations": {
+      "checkmate": 16,
+      "insufficient_material": 1,
+      "threefold_repetition": 3
+    }
+  },
+  {
+    "elo": 2200,
+    "games": 20,
+    "wins": 2,
+    "draws": 1,
+    "losses": 17,
+    "score": 0.125,
+    "margin": 0.13995393979148246,
+    "elo_diff": -338.0392160057027,
+    "by_colour": {
+      "white": 0.2,
+      "black": 0.05
+    },
+    "by_opening": {
+      "English Opening": 0.25,
+      "French Classical": 0.0,
+      "French Winawer": 0.0,
+      "Grunfeld Defence": 0.5,
+      "Petroff Defence": 0.0,
+      "Scotch Game": 0.25,
+      "Sicilian Closed": 0.0,
+      "Sicilian Sveshnikov": 0.0
+    },
+    "terminations": {
+      "checkmate": 19,
+      "threefold_repetition": 1
+    }
+  }
+]
