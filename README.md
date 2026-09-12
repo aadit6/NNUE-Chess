@@ -1,14 +1,13 @@
 # ai-chessathon
 
-Team **Claude's Gambit**'s entry for [AI Chessathon](https://aichessathon.com): a pure-Python
-alpha-beta engine with a neural evaluation trained from scratch on a rented GPU, an opening book
-of master games, and every measurement used to decide what went in.
+Team **Claude's Gambit**'s entry for [AI Chessathon](https://aichessathon.com): a Python
+alpha-beta engine with a neural evaluation trained from scratch on a RTX 4090
 
 <p align="center">
   <img src="docs/img/game.gif" alt="v9 beating Stockfish capped at UCI_Elo 2750, with the network's evaluation beside the board" width="760">
 </p>
 
-**Current build: v9b**, at the repo root. It plays a HalfKAv2_hm network (L1 1024) trained for
+**Current build (v9b):**, at the repo root. It plays a HalfKAv2_hm network (L1 1024) trained for
 121 epochs on 12.1 billion positions. Against Stockfish capped with `UCI_Elo` at 10 s + 0.1 s,
 v9 (the same engine before its book was trimmed to move 20) scored 75% at 2000, 80% at 2250, 70%
 at 2500 and 55% at 2750. The hand-written v5 it replaced scored 45% at 1700. Last updated
