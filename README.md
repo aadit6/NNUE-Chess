@@ -87,9 +87,11 @@ caller passes. Compiling everything at import took the 90 s start-up budget once
 | Quiescence search | Captures only, with stand-pat, delta pruning and SEE pruning of losing captures. |
 
 Time management gives each move `time_left / 34` plus 85% of the increment, which the engine
-measures rather than trusts, and switches to `/ 45` under 25 seconds. At the real clock that is
-about 3 to 4 s a move and depth 8 to 10, against v9b's median 8 over the 802 moves it searched at
-the event. With 800 ms left it answers in 43 ms, and with 150 ms it does not search at all.
+measures rather than trusts, and switches to `/ 45` under 25 seconds. Over a full game against
+v9b at 120 s + 0.5 s, which it won by checkmate, that came to a median 2.1 s a move and a median
+depth of **10** across the 28 moves it searched, spread 8 to 11 and never longer than 5.8 s; the
+other seven moves were a mate it found at once. v9b's median at the event was depth 8. With
+800 ms left it answers in 43 ms, and with 150 ms it does not search at all.
 
 The rules above are v9b's, unchanged. Two things behave differently in compiled code: running out
 of time sets a flag and every node returns at once, where the Python search raised an exception,
