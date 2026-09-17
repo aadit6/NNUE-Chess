@@ -1,5 +1,5 @@
 [project]
-name = "aichessathon-starter"
+name = "nnue-chess"
 version = "0.1.0"
 requires-python = "==3.12.*"
 dependencies = [
@@ -35,3 +35,8 @@ ignore = ["N818"]
 [tool.mypy]
 strict = true
 files = ["agent.py", "harness"]
+
+# The compiled modules call numba's structref, typeof and types APIs, which carry no annotations.
+[[tool.mypy.overrides]]
+module = ["position", "evaluation", "search"]
+disallow_untyped_calls = false

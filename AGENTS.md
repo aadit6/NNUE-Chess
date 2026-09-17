@@ -85,6 +85,7 @@ make play      # one game against a baseline, real time control
 make arena     # 16 fast games against a baseline, with a score and an interval
 make zip       # build submission.zip, then smoke it the way the platform does
 make gate      # ruff, mypy, and two games that have to finish cleanly
+make verify    # the compiled engine against python-chess and the Python engine it replaced
 ```
 
 `make zip` extracts what it built and plays out of it, so a module you never packaged fails there

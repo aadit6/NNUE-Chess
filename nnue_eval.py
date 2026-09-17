@@ -9,18 +9,25 @@ on the board, turns them into a score: 1024 -> 32 -> 32 -> 1, each hidden layer 
 its square and itself through a clipped ReLU, plus a skip connection from the first layer and
 a material-like PSQT term averaged over the two sides.
 
-The accumulators are rebuilt from python-chess's bitboards on every call, inside one numba
-function: python-chess makes and unmakes the moves, and the network only ever sees positions.
+Two ways to run it:
+
+- forward() rebuilds both accumulators from bitboards on every call. It is the reference: the
+  tools and checks use it, and it is what versions/v9b plays with.
+- refresh(), add_feature(), remove_feature() and head() split the same arithmetic so the engine
+  can keep accumulators up to date move by move (see evaluation.py). A move changes two to four
+  inputs, so updating costs a handful of rows where rebuilding costs about thirty.
+
 Every loop reads a one-dimensional row and sums into a float32 scalar. Written with flat
 offsets or a float64 running sum, the same 1024 -> 32 layer measured six times slower,
 because the compiler stops vectorising it.
 """
 
+import os
 from pathlib import Path
 
 import chess
 import numpy as np
-from numba import njit
+from numba import float32, int64, njit, types, uint64
 
 WEIGHTS = Path(__file__).resolve().parent / "weights" / "nnue.pt"
 L2 = 32
@@ -69,9 +76,24 @@ SIGNATURE = (
 )
 
 
-@njit(SIGNATURE, fastmath=True, cache=False)
+# See CACHE in position.py.
+CACHE = bool(os.environ.get("NNUE_CHESS_CACHE_DIR"))
+
+
+@njit(SIGNATURE, fastmath=True, cache=CACHE)
 def forward(  # type: ignore[no-untyped-def]
-    pawns, knights, bishops, rooks, queens, kings, white, black, stm, ft_weight, ft_psqt, dense,
+    pawns,
+    knights,
+    bishops,
+    rooks,
+    queens,
+    kings,
+    white,
+    black,
+    stm,
+    ft_weight,
+    ft_psqt,
+    dense,
     tables,
 ):
     """Score for the side to move, in network units. stm is 0 for White and 1 for Black.
@@ -184,6 +206,172 @@ def forward(  # type: ignore[no-untyped-def]
     return out + half_psqt if stm == 0 else out - half_psqt
 
 
+# --- incremental accumulators ------------------------------------------------------------------
+
+ROW = float32[::1]
+MATRIX = float32[:, ::1]
+
+
+@njit(int64(int64, int64, int64, int64, int64[::1]), cache=CACHE)
+def feature_index(piece, square, king_square, perspective, tables):  # type: ignore[no-untyped-def]
+    """The input a piece (colour * 6 + type) on square switches on, for one side's accumulator.
+
+    Mirrored so that side's king is on files e-h, and flipped vertically for Black.
+    """
+    flip = (7 if (king_square & 7) < 4 else 0) ^ (56 if perspective == 1 else 0)
+    base = tables[64 + (king_square ^ flip)] * PLANES_PER_BUCKET
+    plane = (piece % 6) * 2 + (1 if piece // 6 != perspective else 0)
+    if plane > 10:  # both kings share the last plane
+        plane = 10
+    return base + plane * 64 + (square ^ flip)
+
+
+@njit(types.void(ROW, ROW, MATRIX, MATRIX, int64), cache=CACHE)
+def add_feature(accumulator, psqt, ft_weight, ft_psqt, index):  # type: ignore[no-untyped-def]
+    row = ft_weight[index]
+    for i in range(accumulator.shape[0]):
+        accumulator[i] += row[i]
+    psqt_row = ft_psqt[index]
+    for bucket in range(psqt.shape[0]):
+        psqt[bucket] += psqt_row[bucket]
+
+
+@njit(types.void(ROW, ROW, MATRIX, MATRIX, int64), cache=CACHE)
+def remove_feature(accumulator, psqt, ft_weight, ft_psqt, index):  # type: ignore[no-untyped-def]
+    row = ft_weight[index]
+    for i in range(accumulator.shape[0]):
+        accumulator[i] -= row[i]
+    psqt_row = ft_psqt[index]
+    for bucket in range(psqt.shape[0]):
+        psqt[bucket] -= psqt_row[bucket]
+
+
+@njit(types.void(ROW, ROW, uint64[::1], int64, MATRIX, MATRIX, ROW, int64[::1]), cache=CACHE)
+def refresh(accumulator, psqt, pieces, perspective, ft_weight, ft_psqt, dense, tables):  # type: ignore[no-untyped-def]
+    """Rebuild one side's accumulator from the 12 piece bitboards (colour * 6 + type).
+
+    psqt keeps all eight bucket columns, because the bucket depends on the piece count at the
+    moment of evaluation, not when the accumulator was built.
+    """
+    for i in range(accumulator.shape[0]):
+        accumulator[i] = dense[i]  # the bias
+    psqt[:] = 0.0
+    king = pieces[perspective * 6 + 5]
+    king_square = tables[((king & (~king + ONE)) * DEBRUIJN) >> SHIFT_58]
+    # Piece type, then colour: forward()'s order, so a rebuild matches it to the last bit.
+    for piece_type in range(6):
+        for colour in range(2):
+            piece = colour * 6 + piece_type
+            bb = pieces[piece]
+            while bb != 0:
+                square = tables[((bb & (~bb + ONE)) * DEBRUIJN) >> SHIFT_58]
+                index = feature_index(piece, square, king_square, perspective, tables)
+                add_feature(accumulator, psqt, ft_weight, ft_psqt, index)
+                bb &= bb - ONE
+
+
+def layer_one_columns(dense: np.ndarray, l1: int) -> np.ndarray:
+    """The 1024 -> 32 weights of every bucket, one row of 32 per input: [bucket, input, neuron].
+
+    forward() stores them a row per neuron. head() walks the inputs instead, skipping the zeros.
+    """
+    block = L2 * l1 + L2 + L3 * 2 * L2 + L3 + 2 * L2 + 2 * L3 + 1
+    buckets = (dense.shape[0] - (l1 + 4)) // block
+    columns = np.empty((buckets, l1, L2), dtype=np.float32)
+    for bucket in range(buckets):
+        offset = l1 + 4 + bucket * block
+        columns[bucket] = dense[offset : offset + L2 * l1].reshape(L2, l1).T
+    return np.ascontiguousarray(columns)
+
+
+@njit(
+    float32(ROW, ROW, ROW, ROW, int64, int64, ROW, float32[:, :, ::1]),
+    fastmath=True,
+    cache=CACHE,
+)
+def head(white, black, white_psqt, black_psqt, stm, bucket, dense, columns):  # type: ignore[no-untyped-def]
+    """Everything after the accumulators: the same network as the end of forward().
+
+    The first layer's inputs are products of clipped values, and about three in four are zero
+    (257 of 1024 nonzero, averaged over the tactics positions). So instead of 32 dot products
+    over all 1024, each nonzero input adds its 32 weights into the neurons: about 8,000
+    multiply-adds instead of 32,768. The sums come out in a different order, so a score can
+    differ from forward()'s in the last bits.
+    """
+    l1 = white.shape[0]
+    half = l1 // 2
+    zero = np.float32(0.0)
+    max_ft = dense[l1]
+    max_hidden = dense[l1 + 1]
+    l0_correction = dense[l1 + 2]
+    sqr_correction = dense[l1 + 3]
+
+    block = L2 * l1 + L2 + L3 * 2 * L2 + L3 + 2 * L2 + 2 * L3 + 1
+    offset = l1 + 4 + bucket * block + L2 * l1  # past the first layer's weights, kept in columns
+    b1 = dense[offset : offset + L2]
+    offset += L2
+    w2 = dense[offset : offset + L3 * 2 * L2]
+    offset += L3 * 2 * L2
+    b2 = dense[offset : offset + L3]
+    offset += L3
+    w_out = dense[offset : offset + 2 * L2 + 2 * L3]
+    b_out = dense[offset + 2 * L2 + 2 * L3]
+    bucket_columns = columns[bucket]
+
+    # First the 1024 inputs, with no branches, noting where the nonzero ones are: which inputs
+    # are zero changes from position to position, so a branch per input is mispredicted often.
+    values = np.empty(l1, dtype=np.float32)
+    nonzero = np.empty(l1, dtype=np.int64)
+    count = np.int64(0)
+    # The first half of the inputs is the side to move's accumulator, the second the other's.
+    for side in range(2):
+        accumulator = white if (stm == 0) == (side == 0) else black
+        base = side * half
+        for i in range(half):
+            first = min(max(accumulator[i], zero), max_ft)
+            value = first * min(max(accumulator[half + i], zero), max_ft)
+            values[base + i] = value
+            nonzero[count] = base + i
+            count += np.int64(value > zero)
+
+    z1 = np.empty(L2, dtype=np.float32)
+    for j in range(L2):
+        z1[j] = b1[j]
+    for k in range(count):
+        index = nonzero[k]
+        value = values[index] * l0_correction
+        column = bucket_columns[index]
+        for j in range(L2):
+            z1[j] += value * column[j]
+
+    h1 = np.empty(2 * L2, dtype=np.float32)
+    skip = z1[L2 - 2] - z1[L2 - 1]
+    for j in range(L2):
+        z = z1[j]
+        h1[j] = min(max(z * z * sqr_correction, zero), max_hidden)
+        h1[L2 + j] = min(max(z, zero), max_hidden)
+
+    h2 = np.empty(2 * L3, dtype=np.float32)
+    for j in range(L3):
+        weights = w2[j * 2 * L2 : (j + 1) * 2 * L2]
+        z = zero
+        for i in range(2 * L2):
+            z += weights[i] * h1[i]
+        z += b2[j]
+        h2[j] = min(max(z * z * sqr_correction, zero), max_hidden)
+        h2[L3 + j] = min(max(z, zero), max_hidden)
+
+    out = zero
+    for i in range(2 * L2):
+        out += w_out[i] * h1[i]
+    for i in range(2 * L3):
+        out += w_out[2 * L2 + i] * h2[i]
+    out += b_out + skip
+
+    half_psqt = (white_psqt[bucket] - black_psqt[bucket]) * np.float32(0.5)
+    return out + half_psqt if stm == 0 else out - half_psqt
+
+
 FT_WEIGHT = np.zeros((1, 2), dtype=np.float32)
 FT_PSQT = np.zeros((1, 8), dtype=np.float32)
 DENSE = np.zeros(1, dtype=np.float32)
@@ -204,8 +392,12 @@ def load(path: Path = WEIGHTS) -> bool:
     parts = [
         tensors["ft_bias"].numpy(),
         np.array(
-            [tensors["max_ft_activation"], tensors["max_hidden_activation"],
-             tensors["l0_correction"], tensors["sqr_correction"]],
+            [
+                tensors["max_ft_activation"],
+                tensors["max_hidden_activation"],
+                tensors["l0_correction"],
+                tensors["sqr_correction"],
+            ],
             dtype=np.float32,
         ),
     ]
@@ -226,11 +418,23 @@ def load(path: Path = WEIGHTS) -> bool:
 
 def raw(board: chess.Board) -> float:
     occupied = board.occupied_co
-    return float(forward(
-        board.pawns, board.knights, board.bishops, board.rooks, board.queens, board.kings,
-        occupied[chess.WHITE], occupied[chess.BLACK], 0 if board.turn == chess.WHITE else 1,
-        FT_WEIGHT, FT_PSQT, DENSE, TABLES,
-    ))
+    return float(
+        forward(
+            board.pawns,
+            board.knights,
+            board.bishops,
+            board.rooks,
+            board.queens,
+            board.kings,
+            occupied[chess.WHITE],
+            occupied[chess.BLACK],
+            0 if board.turn == chess.WHITE else 1,
+            FT_WEIGHT,
+            FT_PSQT,
+            DENSE,
+            TABLES,
+        )
+    )
 
 
 def evaluate(board: chess.Board) -> int:

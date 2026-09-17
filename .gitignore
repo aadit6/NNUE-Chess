@@ -15,3 +15,5 @@ versions/*/book/
 versions/*/weights/
 training/curves/
 tools/games/
+# Compiled-code cache for local testing, see NNUE_CHESS_CACHE_DIR in agent.py
+.numba_cache/
