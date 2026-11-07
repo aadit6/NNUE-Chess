@@ -213,7 +213,7 @@ def game_gif() -> None:
         panel_x = board_x + 8 * SQ + 22
         draw.rounded_rectangle((panel_x, 16, panel_x + 262, height - 16), radius=10, fill=PANEL)
         x = panel_x + 18
-        draw.text((x, 32), "Claude's Gambit v9", font=font(17, bold=True), fill=INK)
+        draw.text((x, 32), "NNUE-Chess v9", font=font(17, bold=True), fill=INK)
         draw.text((x, 56), "vs Stockfish, UCI_Elo 2750", font=font(13), fill=MUTED)
         draw.text((x, 76), f"{opening} · 10 s + 0.1 s", font=font(12), fill=MUTED)
         draw.text((x, 118), label, font=font(24, bold=True), fill=INK)
